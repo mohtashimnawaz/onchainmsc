@@ -147,12 +147,14 @@ export const AuthProvider = ({ children }) => {
     identity,
     principal,
     artist,
+    user: artist, // Alias for compatibility
     loading,
     login,
     logout,
     registerArtist,
     updateArtist,
     loadArtistProfile,
+    isAdmin: artist?.role === 'Admin', // Add admin check
   };
 
   return (
