@@ -890,7 +890,7 @@ body {
           color: white;
           
           &:hover {
-            background: darken(var(--primary-color), 10%);
+            background: #0056b3;
           }
         }
         
@@ -899,7 +899,7 @@ body {
           color: white;
           
           &:hover {
-            background: darken(var(--text-secondary), 10%);
+            background: #4a4a4a;
           }
         }
       }
@@ -929,7 +929,7 @@ body {
       cursor: pointer;
       
       &:hover {
-        background: darken(var(--primary-color), 10%);
+        background: #0056b3;
       }
     }
   }
@@ -1238,7 +1238,7 @@ body {
       cursor: pointer;
       
       &:hover {
-        background: darken(var(--primary-color), 10%);
+        background: #0056b3;
       }
     }
   }
@@ -1379,7 +1379,7 @@ body {
         cursor: pointer;
         
         &:hover {
-          background: darken(var(--primary-color), 10%);
+          background: #0056b3;
         }
         
         &:disabled {
@@ -1419,7 +1419,7 @@ body {
         font-size: 0.8rem;
         
         &:hover {
-          background: darken(var(--error-color), 10%);
+          background: #e60000;
         }
       }
     }
@@ -1490,7 +1490,7 @@ body {
       cursor: pointer;
       
       &:hover {
-        background: darken(var(--primary-color), 10%);
+        background: #0056b3;
       }
     }
   }
@@ -1566,7 +1566,7 @@ body {
           font-weight: 500;
           
           &:hover {
-            background: darken(var(--primary-color), 10%);
+            background: #0056b3;
           }
         }
       }
