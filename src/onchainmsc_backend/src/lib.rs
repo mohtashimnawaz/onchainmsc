@@ -5,6 +5,7 @@ use ic_cdk::api::caller;
 use candid::Principal;
 use ic_stable_structures::{StableBTreeMap, DefaultMemoryImpl, storable::BoundedStorable, storable::Storable};
 use std::borrow::Cow;
+use serde::{Deserialize as SerdeDeserialize, Serialize};
 
 #[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct Artist {
