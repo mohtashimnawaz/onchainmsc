@@ -1,3 +1,392 @@
+type TrackVisibility = variant { Public; Private; InviteOnly };
+type TrackRole = variant { Owner; Collaborator; Viewer };
+type Activity = record { user_id: nat64; action: text; timestamp: nat64; details: text };
+
+// Add new types for profile customization
+
+type CollabRequestStatus = variant { Pending; Accepted; Declined };
+type CollabRequest = record {
+  id: nat64;
+  from: nat64;
+  to: nat64;
+  track_id: nat64;
+  message: opt text;
+  status: CollabRequestStatus;
+  timestamp: nat64;
+};
+
+type TaskStatus = variant { Open; InProgress; Completed; Cancelled };
+type Task = record {
+  id: nat64;
+  track_id: nat64;
+  assigned_to: nat64;
+  description: text;
+  status: TaskStatus;
+  created_at: nat64;
+  updated_at: nat64;
+};
+
+type TrackAnalytics = record {
+  play_count: nat64;
+  revenue: nat64;
+  comments_count: nat64;
+  ratings_count: nat64;
+  avg_rating: nat8;
+};
+
+// --- Reporting & Moderation ---
+type ReportTargetType = variant { User; Artist; Track; Comment };
+type ReportStatus = variant { Pending; Reviewed; Dismissed; Resolved };
+type Report = record {
+  id: nat64;
+  reporter: principal;
+  target_type: ReportTargetType;
+  target_id: text;
+  reason: text;
+  details: opt text;
+  status: ReportStatus;
+  created_at: nat64;
+  reviewed_by: opt principal;
+  reviewed_at: opt nat64;
+  resolution_notes: opt text;
+};
+// --- Track Licensing/Contracts ---
+type LicenseType = variant { AllRightsReserved; CreativeCommons; Custom };
+type TrackLicense = record {
+  track_id: nat64;
+  license_type: LicenseType;
+  terms: opt text;
+  contract_text: opt text;
+  issued_at: nat64;
+};
+
+// --- Audit Log & Admin Actions History ---
+type AuditLogEntry = record {
+  id: nat64;
+  admin: principal;
+  action: text;
+  target_type: text;
+  target_id: text;
+  timestamp: nat64;
+  details: opt text;
+};
+
+// --- Content Moderation Queue ---
+type ModerationTargetType = variant { Track; Comment };
+type ModerationStatus = variant { Pending; Approved; Removed };
+type ModerationQueueItem = record {
+  id: nat64;
+  target_type: ModerationTargetType;
+  target_id: text;
+  flagged_by: opt principal;
+  reason: text;
+  status: ModerationStatus;
+  created_at: nat64;
+  reviewed_by: opt principal;
+  reviewed_at: opt nat64;
+  notes: opt text;
+};
+
+// --- Suspension & Appeals ---
+type SuspensionTargetType = variant { User; Artist; Track };
+type SuspensionStatus = variant { Active; Lifted; Expired };
+type Suspension = record {
+  id: nat64;
+  target_type: SuspensionTargetType;
+  target_id: text;
+  reason: text;
+  imposed_by: principal;
+  imposed_at: nat64;
+  duration_secs: opt nat64;
+  status: SuspensionStatus;
+  lifted_by: opt principal;
+  lifted_at: opt nat64;
+  notes: opt text;
+};
+type AppealStatus = variant { Pending; Approved; Denied };
+type SuspensionAppeal = record {
+  id: nat64;
+  suspension_id: nat64;
+  submitted_by: principal;
+  submitted_at: nat64;
+  content: text;
+  status: AppealStatus;
+  reviewed_by: opt principal;
+  reviewed_at: opt nat64;
+  notes: opt text;
+};
+
+type TrackVersion = record {
+  version: nat32;
+  title: text;
+  description: text;
+  contributors: vec nat64;
+  changed_by: principal;
+  changed_at: nat64;
+  change_description: opt text;
+};
+
+type VersionComparison = record {
+  version1: nat32;
+  version2: nat32;
+  title_changed: bool;
+  description_changed: bool;
+  contributors_changed: bool;
+  title_diff: opt text;
+  description_diff: opt text;
+  contributors_diff: opt text;
+};
+
+// --- Advanced Analytics & Insights ---
+type TrackPerformanceMetrics = record {
+  track_id: nat64;
+  total_plays: nat64;
+  unique_listeners: nat64;
+  avg_rating: float64;
+  total_revenue: nat64;
+  comments_count: nat64;
+  shares_count: nat64;
+  download_count: nat64;
+  engagement_rate: float64;
+  growth_rate: float64;
+};
+
+type UserEngagementMetrics = record {
+  user_id: nat64;
+  total_tracks_created: nat64;
+  total_plays_received: nat64;
+  total_revenue_earned: nat64;
+  avg_track_rating: float64;
+  active_days: nat64;
+  followers_count: nat64;
+  following_count: nat64;
+  engagement_score: float64;
+};
+
+type RevenueInsights = record {
+  total_platform_revenue: nat64;
+  top_earning_tracks: vec record { 0: nat64; 1: nat64 };
+  top_earning_artists: vec record { 0: nat64; 1: nat64 };
+  revenue_by_genre: vec record { 0: text; 1: nat64 };
+  monthly_revenue_trend: vec record { 0: nat64; 1: nat64 };
+};
+
+type PlatformAnalytics = record {
+  total_tracks: nat64;
+  total_users: nat64;
+  total_artists: nat64;
+  total_plays: nat64;
+  total_revenue: nat64;
+  avg_track_rating: float64;
+  most_popular_genres: vec record { 0: text; 1: nat64 };
+  most_active_users: vec record { 0: nat64; 1: nat64 };
+};
+
+// --- Collaborative Workflow Management ---
+type WorkflowStatus = variant { Planning; Recording; Mixing; Mastering; Review; Published; Archived };
+type WorkflowStep = record {
+  id: nat64;
+  track_id: nat64;
+  step_name: text;
+  status: WorkflowStatus;
+  assigned_to: vec nat64;
+  due_date: opt nat64;
+  completed_at: opt nat64;
+  notes: opt text;
+  dependencies: vec nat64;
+};
+type CollaborationSession = record {
+  id: nat64;
+  track_id: nat64;
+  session_name: text;
+  participants: vec nat64;
+  start_time: nat64;
+  end_time: opt nat64;
+  notes: opt text;
+  recording_url: opt text;
+};
+type WorkflowTemplate = record {
+  id: nat64;
+  name: text;
+  description: text;
+  steps: vec text;
+  estimated_duration_days: nat32;
+  genre_specific: bool;
+  target_genre: opt text;
+};
+
 service : {
     "greet": (text) -> (text) query;
+    "register_artist": (text, text, opt text, opt text, opt vec text) -> (opt record { id: nat64; name: text; bio: text; social: opt text; royalty_balance: nat64; profile_image_url: opt text; links: opt vec text });
+    "get_artist": (nat64) -> (opt record { id: nat64; name: text; bio: text; social: opt text; royalty_balance: nat64 }) query;
+    "update_artist": (nat64, text, text, opt text, opt text, opt vec text) -> (opt record { id: nat64; name: text; bio: text; social: opt text; royalty_balance: nat64; profile_image_url: opt text; links: opt vec text });
+    "list_artists": () -> (vec record { id: nat64; name: text; bio: text; social: opt text; royalty_balance: nat64; profile_image_url: opt text; links: opt vec text }) query;
+    "create_track": (text, text, vec nat64) -> (opt record {
+        id: nat64;
+        title: text;
+        description: text;
+        contributors: vec nat64;
+        version: nat32;
+        splits: opt vec record { id: nat64; pct: nat8 };
+        comments: vec record { commenter: nat64; text: text };
+        payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 };
+        visibility: TrackVisibility;
+        invited: vec nat64;
+        roles: vec record { 0: nat64; 1: TrackRole };
+        ratings: vec record { 0: nat64; 1: nat8 };
+        tags: vec text;
+        genre: opt text;
+        play_count: nat64;
+    });
+    "get_track": (nat64) -> (opt record { id: nat64; title: text; description: text; contributors: vec nat64; version: nat32; splits: opt vec record { id: nat64; pct: nat8 }; comments: vec record { commenter: nat64; text: text }; payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 } }) query;
+    "update_track": (nat64, text, text, vec nat64, nat32) -> (opt record { id: nat64; title: text; description: text; contributors: vec nat64; version: nat32; splits: opt vec record { id: nat64; pct: nat8 }; comments: vec record { commenter: nat64; text: text }; payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 } });
+    "list_tracks": () -> (vec record { id: nat64; title: text; description: text; contributors: vec nat64; version: nat32; splits: opt vec record { id: nat64; pct: nat8 }; comments: vec record { commenter: nat64; text: text }; payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 } }) query;
+    "set_track_splits": (nat64, vec record { id: nat64; pct: nat8 }) -> (opt record { id: nat64; title: text; description: text; contributors: vec nat64; version: nat32; splits: opt vec record { id: nat64; pct: nat8 }; comments: vec record { commenter: nat64; text: text }; payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 } });
+    "get_track_splits": (nat64) -> (opt vec record { id: nat64; pct: nat8 }) query;
+    "add_comment": (nat64, nat64, text) -> (opt record { id: nat64; title: text; description: text; contributors: vec nat64; version: nat32; splits: opt vec record { id: nat64; pct: nat8 }; comments: vec record { commenter: nat64; text: text }; payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 } });
+    "list_comments": (nat64) -> (vec record { commenter: nat64; text: text }) query;
+    "add_track_version": (nat64, text, text, vec nat64, opt text) -> (opt TrackVersion);
+    "get_track_versions": (nat64) -> (vec TrackVersion) query;
+    "search_tracks_by_title": (text) -> (vec record { id: nat64; title: text; description: text; contributors: vec nat64; version: nat32; splits: opt vec record { id: nat64; pct: nat8 }; comments: vec record { commenter: nat64; text: text }; payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 } }) query;
+    "search_tracks_by_contributor": (nat64) -> (vec record { id: nat64; title: text; description: text; contributors: vec nat64; version: nat32; splits: opt vec record { id: nat64; pct: nat8 }; comments: vec record { commenter: nat64; text: text }; payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 } }) query;
+    "delete_track": (nat64) -> (bool);
+    "distribute_payment": (nat64, nat64, nat64, nat64) -> (bool);
+    "get_royalty_balance": (nat64) -> (nat64) query;
+    "get_payment_history": (nat64) -> (vec record { payer: nat64; amount: nat64; timestamp: nat64 }) query;
+    "set_track_visibility": (nat64, TrackVisibility) -> (bool);
+    "get_track_visibility": (nat64) -> (opt TrackVisibility) query;
+    "invite_user": (nat64, nat64) -> (bool);
+    "assign_role": (nat64, nat64, TrackRole) -> (bool);
+    "get_user_role": (nat64, nat64) -> (opt TrackRole) query;
+    "get_user_activity": (nat64) -> (vec Activity) query;
+    "get_recent_activity": (nat32) -> (vec Activity) query;
+    "rate_track": (nat64, nat64, nat8) -> (bool);
+    "get_track_rating": (nat64) -> (nat32, nat8) query;
+    "get_user_track_rating": (nat64, nat64) -> (opt nat8) query;
+    "add_tag": (nat64, text) -> (bool);
+    "remove_tag": (nat64, text) -> (bool);
+    "set_genre": (nat64, text) -> (bool);
+    "get_genre": (nat64) -> (opt text) query;
+    "search_tracks_by_tag": (text) -> (vec record {
+        id: nat64;
+        title: text;
+        description: text;
+        contributors: vec nat64;
+        version: nat32;
+        splits: opt vec record { id: nat64; pct: nat8 };
+        comments: vec record { commenter: nat64; text: text };
+        payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 };
+        visibility: TrackVisibility;
+        invited: vec nat64;
+        roles: vec record { 0: nat64; 1: TrackRole };
+        ratings: vec record { 0: nat64; 1: nat8 };
+        tags: vec text;
+        genre: opt text;
+    }) query;
+    "search_tracks_by_genre": (text) -> (vec record {
+        id: nat64;
+        title: text;
+        description: text;
+        contributors: vec nat64;
+        version: nat32;
+        splits: opt vec record { id: nat64; pct: nat8 };
+        comments: vec record { commenter: nat64; text: text };
+        payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 };
+        visibility: TrackVisibility;
+        invited: vec nat64;
+        roles: vec record { 0: nat64; 1: TrackRole };
+        ratings: vec record { 0: nat64; 1: nat8 };
+        tags: vec text;
+        genre: opt text;
+    }) query;
+    // Collaboration request endpoints
+    "send_collab_request": (nat64, nat64, nat64, opt text) -> (opt CollabRequest);
+    "respond_collab_request": (nat64, bool) -> (opt CollabRequest);
+    "list_collab_requests_for_user": (nat64) -> (vec CollabRequest) query;
+    // Task management endpoints
+    "create_task": (nat64, nat64, text) -> (opt Task);
+    "update_task_status": (nat64, TaskStatus) -> (opt Task);
+    "list_tasks_for_track": (nat64) -> (vec Task) query;
+    "list_tasks_for_user": (nat64) -> (vec Task) query;
+    "withdraw_royalties": (nat64, nat64) -> (bool);
+    "increment_play_count": (nat64) -> (bool);
+    "get_track_analytics": (nat64) -> (opt TrackAnalytics) query;
+    "send_notification": (principal, text) -> (record { id: nat64; user_principal: principal; message: text; timestamp: nat64; read: bool });
+    "list_notifications": () -> (vec record { id: nat64; user_principal: principal; message: text; timestamp: nat64; read: bool }) query;
+    "mark_notification_read": (nat64) -> (bool);
+    "ban_user": (principal) -> (bool);
+    "delete_user_by_admin": (principal) -> (bool);
+    "delete_artist_by_admin": (nat64) -> (bool);
+    "delete_track_by_admin": (nat64) -> (bool);
+    "follow_artist": (principal) -> (bool);
+    "unfollow_artist": (principal) -> (bool);
+    "list_followed_artists": () -> (vec principal) query;
+    "follow_track": (nat64) -> (bool);
+    "unfollow_track": (nat64) -> (bool);
+    "list_followed_tracks": () -> (vec nat64) query;
+    "promote_to_admin": () -> (bool);
+    // Playlist Management
+    "create_playlist": (text, opt text, vec nat64) -> (opt record { id: nat64; owner: principal; name: text; description: opt text; track_ids: vec nat64; created_at: nat64; updated_at: nat64 });
+    "update_playlist": (nat64, text, opt text, vec nat64) -> (opt record { id: nat64; owner: principal; name: text; description: opt text; track_ids: vec nat64; created_at: nat64; updated_at: nat64 });
+    "delete_playlist": (nat64) -> (bool);
+    "list_playlists": () -> (vec record { id: nat64; owner: principal; name: text; description: opt text; track_ids: vec nat64; created_at: nat64; updated_at: nat64 }) query;
+    "get_playlist": (nat64) -> (opt record { id: nat64; owner: principal; name: text; description: opt text; track_ids: vec nat64; created_at: nat64; updated_at: nat64 }) query;
+    // Track Download/Streaming Controls
+    "set_track_downloadable": (nat64, bool) -> (bool);
+    "can_download_track": (nat64) -> (bool) query;
+    "record_play": (nat64) -> (bool);
+    "record_download": (nat64) -> (bool);
+    "get_user_play_count": (nat64) -> (nat64) query;
+    "get_user_download_count": (nat64) -> (nat64) query;
+    // User-to-User Messaging
+    "send_message": (principal, text) -> (opt record { id: nat64; from: principal; to: principal; content: text; timestamp: nat64; read: bool });
+    "list_messages_with": (principal) -> (vec record { id: nat64; from: principal; to: principal; content: text; timestamp: nat64; read: bool }) query;
+    "mark_message_read": (nat64) -> (bool);
+    // --- Reporting & Moderation ---
+    report_content: (ReportTargetType, text, text, opt text) -> (opt Report) query;
+    list_reports: () -> (vec Report) query;
+    review_report: (nat64, ReportStatus, opt text) -> (bool) query;
+    // --- Track Licensing/Contracts ---
+    set_track_license: (nat64, LicenseType, opt text, opt text) -> (opt TrackLicense) query;
+    get_track_license: (nat64) -> (opt TrackLicense) query;
+    // --- Audit Log & Admin Actions History ---
+    list_audit_log: () -> (vec AuditLogEntry) query;
+    // --- Content Moderation Queue ---
+    flag_content_for_moderation: (ModerationTargetType, text, text) -> (opt ModerationQueueItem);
+    list_moderation_queue: () -> (vec ModerationQueueItem) query;
+    review_moderation_item: (nat64, ModerationStatus, opt text) -> (bool);
+    // --- Suspension & Appeals ---
+    suspend_target: (SuspensionTargetType, text, text, opt nat64) -> (opt Suspension);
+    lift_suspension: (nat64, opt text) -> (bool);
+    list_suspensions: () -> (vec Suspension) query;
+    submit_suspension_appeal: (nat64, text) -> (opt SuspensionAppeal);
+    review_suspension_appeal: (nat64, AppealStatus, opt text) -> (bool);
+    list_suspension_appeals: () -> (vec SuspensionAppeal) query;
+    // --- Automated Content Moderation ---
+    add_banned_keyword: (text) -> (bool);
+    remove_banned_keyword: (text) -> (bool);
+    list_banned_keywords: () -> (vec text) query;
+    // --- Enhanced Version Management ---
+    revert_to_version: (nat64, nat32) -> (opt record { id: nat64; title: text; description: text; contributors: vec nat64; version: nat32; splits: opt vec record { id: nat64; pct: nat8 }; comments: vec record { commenter: nat64; text: text }; payments: vec record { payer: nat64; amount: nat64; timestamp: nat64 } });
+    get_version_history: (nat64) -> (vec TrackVersion) query;
+    compare_versions: (nat64, nat32, nat32) -> (opt VersionComparison) query;
+    
+    // --- Advanced Analytics & Insights ---
+    get_track_performance_metrics: (nat64) -> (opt TrackPerformanceMetrics) query;
+    get_user_engagement_metrics: (nat64) -> (opt UserEngagementMetrics) query;
+    get_revenue_insights: () -> (RevenueInsights) query;
+    get_platform_analytics: () -> (PlatformAnalytics) query;
+    
+    // --- Collaborative Workflow Management ---
+    create_workflow_step: (nat64, text, vec nat64, opt nat64, opt text) -> (opt WorkflowStep);
+    update_workflow_step_status: (nat64, WorkflowStatus, opt text) -> (opt WorkflowStep);
+    get_track_workflow_steps: (nat64) -> (vec WorkflowStep) query;
+    create_collaboration_session: (nat64, text, vec nat64, opt text) -> (opt CollaborationSession);
+    end_collaboration_session: (nat64, opt text) -> (opt CollaborationSession);
+    get_track_collaboration_sessions: (nat64) -> (vec CollaborationSession) query;
+    create_workflow_template: (text, text, vec text, nat32, bool, opt text) -> (opt WorkflowTemplate);
+    get_workflow_templates: () -> (vec WorkflowTemplate) query;
+    get_workflow_templates_by_genre: (text) -> (vec WorkflowTemplate) query;
+    upload_track_file: (track_id: text, file_bytes: blob) -> (success: bool);
+    get_track_file: (track_id: text) -> (file_bytes: opt blob) query;
 }
